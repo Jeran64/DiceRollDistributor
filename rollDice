@@ -1,12 +1,17 @@
 diceCount=10
-keepCount=3
-diceSize=20
-trialCount=10000
+keepCount=2
+diceSize=100
+trialCount=100000
+constant=0#if there is a constant to be added (e.x. 1d4+5);
+keepLow=True #true means keep the x lowest results. false means keep the x highest results.
 total=0
 textOut=""
 import random
+import matplotlib.pyplot as plt
+import csv
 from collections import Counter
 results=[]
+chances=[]
 for a in range(trialCount):
     randomlist = []
     for i in range(0,diceCount):
@@ -14,8 +19,13 @@ for a in range(trialCount):
         randomlist.append(n)#keep a list of all the dice we rolled.
     randomlist.sort()#put the lowest of the bunch first
     #print(randomlist)
-    for b in range (0,keepCount):
-        total=total+randomlist[b]#add up the lowest Nth dice values.
+    if keepLow:
+        for b in range (0,keepCount):
+            total=total+randomlist[b]#add up the lowest Nth dice values.
+    else:
+        for b in range (1,keepCount+1):#this is offset by one to prevent out of range errors.
+            total=total+randomlist[len(randomlist)-b]#add up the lowest Nth dice values.
+    total=total+constant#add the constant at the end so it's only done once.
     results.append(total)#save for our histogram later
     total=0;#clear it back out.
     
@@ -23,9 +33,27 @@ process=Counter(results)#get a histogram frequency Count
 process=sorted(process.items())#this is to sort a dict object
 #print(process)#feedbac
 for value, count in process:#write all out values to a string
-    textOut=textOut+str(value)+","+str(count)+",%"+str('%.3f'%(((count/trialCount)*100))+"\n")#write a comma separated list, with the number rolled, how many times, and the percentage of the total rolls, truncated to 3 decimals.
+    chances.append('%.3f'%(((count/trialCount)*100)))#save the math to our list.
+    textOut=textOut+str(value)+","+str(count)+",%"+str('%.3f'%(((count/trialCount)*100)))+"\n"#write a comma separated list, with the number rolled, how many times, and the percentage of the total rolls, truncated to 3 decimals.
 f = open('Data.csv','w')#open a file.
 f.write(textOut) #write or generated CSV.
 ## Python will convert \n to os.linesep
 f.close()#save the whales
 print(textOut)
+#what the heck, are you about to open the file you just wrote? no, not quite, but its done this way for a papertrail.
+
+x=[]
+y=[]
+index=0
+for value, count in process:
+        x.append(int(value))
+        y.append(int(count))
+        index=index+1
+        
+
+plt.plot(x,y, label='Frequency')
+plt.xlabel('Rolled Value')
+plt.ylabel('Count')
+
+plt.legend()
+plt.show()
