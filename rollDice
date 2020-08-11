@@ -1,0 +1,31 @@
+diceCount=10
+keepCount=3
+diceSize=20
+trialCount=10000
+total=0
+textOut=""
+import random
+from collections import Counter
+results=[]
+for a in range(trialCount):
+    randomlist = []
+    for i in range(0,diceCount):
+        n = random.randint(1,diceSize)
+        randomlist.append(n)#keep a list of all the dice we rolled.
+    randomlist.sort()#put the lowest of the bunch first
+    #print(randomlist)
+    for b in range (0,keepCount):
+        total=total+randomlist[b]#add up the lowest Nth dice values.
+    results.append(total)#save for our histogram later
+    total=0;#clear it back out.
+    
+process=Counter(results)#get a histogram frequency Count
+process=sorted(process.items())#this is to sort a dict object
+#print(process)#feedbac
+for value, count in process:#write all out values to a string
+    textOut=textOut+str(value)+","+str(count)+",%"+str('%.3f'%(((count/trialCount)*100))+"\n")#write a comma separated list, with the number rolled, how many times, and the percentage of the total rolls, truncated to 3 decimals.
+f = open('Data.csv','w')#open a file.
+f.write(textOut) #write or generated CSV.
+## Python will convert \n to os.linesep
+f.close()#save the whales
+print(textOut)
